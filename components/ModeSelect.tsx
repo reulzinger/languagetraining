@@ -1,0 +1,63 @@
+"use client";
+
+import { Category, Lang, LANG_FLAG } from "@/lib/types";
+import { Profile, starsFor } from "@/lib/storage";
+import { Stars, TopNav } from "./ui";
+import { GameMode } from "./App";
+
+const MODES: { mode: GameMode; emoji: string; title: string; desc: string }[] = [
+  { mode: "flash", emoji: "🃏", title: "Karteikarten", desc: "Karten umdrehen, anhören und einprägen" },
+  { mode: "quiz", emoji: "❓", title: "Quiz", desc: "10 Fragen mit 4 Antworten – was stimmt?" },
+  { mode: "blitz", emoji: "⚡", title: "Blitzrunde", desc: "60 Sekunden Vollgas nur mit dieser Kategorie" },
+];
+
+export default function ModeSelect({
+  cat,
+  profile,
+  onPlay,
+  onBack,
+}: {
+  cat: Category;
+  profile: Profile;
+  onPlay: (mode: GameMode) => void;
+  onBack: () => void;
+}) {
+  const langs: Lang[] = profile.lang === "both" ? ["en", "es"] : [profile.lang];
+
+  return (
+    <div className="screen">
+      <TopNav title={cat.name} emoji={cat.emoji} onBack={onBack} />
+      <div
+        className="mode-hero card"
+        style={{ background: `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
+      >
+        <span className="mode-hero-emoji">{cat.emoji}</span>
+        <div className="mode-hero-info">
+          <div className="mode-hero-name">{cat.name}</div>
+          <div className="mode-hero-count">{cat.words.length} Wörter</div>
+          <div className="mode-hero-stars">
+            {langs.map((l) => (
+              <span key={l} className="cat-starrow">
+                <span className="cat-flag">{LANG_FLAG[l]}</span>
+                <Stars count={starsFor(profile, cat, l)} size={15} />
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mode-list">
+        {MODES.map((m) => (
+          <button key={m.mode} className="mode-btn card pop" onClick={() => onPlay(m.mode)}>
+            <span className="mode-btn-emoji">{m.emoji}</span>
+            <span className="mode-btn-text">
+              <span className="mode-btn-title">{m.title}</span>
+              <span className="mode-btn-desc">{m.desc}</span>
+            </span>
+            <span className="mode-btn-go">▶</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
