@@ -5,11 +5,12 @@ Spielerischer Wortschatz-Trainer für die Familie: Deutsch → 🇬🇧 Englisch
 ## Features
 
 - 👨‍👩‍👧‍👦 Familienprofile mit Avatar – Fortschritt wird pro Person im Browser gespeichert (localStorage, kein Login)
-- 📚 21 Kategorien mit 743 Wörtern (Deutsch / Englisch / Spanisch + Emoji)
+- 📚 21 Kategorien + Gemischt-Modus mit 1059 Wörtern (Deutsch / Englisch / Spanisch + Emoji)
+- 📖 Geführte Lektionen: jede Kategorie in Häppchen von 10 neuen Wörtern, beliebig oft wiederholbar
 - 6 Spielmodi: 🃏 Karteikarten, ❓ Quiz, 🧠 Memory, ⌨️ Wort tippen, 🎧 Hör-Quiz, ⚡ Blitzrunde (60 s, Combo-Bonus)
 - 🔁 Wackelkandidaten: Wörter mit Fehlern kommen automatisch zur Wiederholung
 - 🇬🇧/🇪🇸 pro Profil wählbar: Englisch, Spanisch oder gemischt
-- ⭐ Sterne pro Kategorie, XP & Level, 🔥 Tages-Streak, 🎖️ 12 Abzeichen, Familien-Bestenliste
+- ⭐ Sterne pro Kategorie, XP & Level, 🔥 Tages-Streak, 🎖️ 15 Abzeichen, Familien-Bestenliste
 - 🔊 Aussprache über die Web Speech API (im Browser eingebaut)
 - 🎉 Konfetti, Sounds und kindgerechtes Design
 
