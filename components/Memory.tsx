@@ -12,7 +12,9 @@ const XP_PER_PAIR = 5;
 
 interface MemCard {
   id: number;
+  pairKey: string;
   wordDe: string;
+  catId: string;
   lang: Lang;
   side: "de" | "x";
   label: string;
@@ -23,8 +25,10 @@ function buildCards(cat: Category, langMode: LangMode): MemCard[] {
   const cards: MemCard[] = [];
   words.forEach((w, i) => {
     const lang = pickLang(langMode);
-    cards.push({ id: i * 2, wordDe: w.de, lang, side: "de", label: `${w.emoji} ${w.de}` });
-    cards.push({ id: i * 2 + 1, wordDe: w.de, lang, side: "x", label: `${LANG_FLAG[lang]} ${w[lang]}` });
+    const catId = w.catId ?? cat.id;
+    const pairKey = `${catId}|${w.de}`;
+    cards.push({ id: i * 2, pairKey, wordDe: w.de, catId, lang, side: "de", label: `${w.emoji} ${w.de}` });
+    cards.push({ id: i * 2 + 1, pairKey, wordDe: w.de, catId, lang, side: "x", label: `${LANG_FLAG[lang]} ${w[lang]}` });
   });
   return shuffle(cards);
 }
@@ -51,21 +55,21 @@ export default function Memory({
   const done = matched.size === PAIRS;
 
   function flip(idx: number) {
-    if (lock || open.includes(idx) || matched.has(cards[idx].wordDe)) return;
+    if (lock || open.includes(idx) || matched.has(cards[idx].pairKey)) return;
     const next = [...open, idx];
     setOpen(next);
     if (next.length < 2) return;
     setMoves((m) => m + 1);
     setLock(true);
     const [a, b] = [cards[next[0]], cards[next[1]]];
-    const isMatch = a.wordDe === b.wordDe && a.side !== b.side;
+    const isMatch = a.pairKey === b.pairKey && a.side !== b.side;
     setTimeout(() => {
       if (isMatch) {
         playCorrect();
-        report(cat.id, a.wordDe, a.lang, true, XP_PER_PAIR);
+        report(a.catId, a.wordDe, a.lang, true, XP_PER_PAIR);
         setMatched((prev) => {
           const s = new Set(prev);
-          s.add(a.wordDe);
+          s.add(a.pairKey);
           if (s.size === PAIRS) playWin();
           return s;
         });
@@ -120,8 +124,8 @@ export default function Memory({
       </div>
       <div className="memory-grid">
         {cards.map((c, i) => {
-          const isOpen = open.includes(i) || matched.has(c.wordDe);
-          const isMatched = matched.has(c.wordDe);
+          const isOpen = open.includes(i) || matched.has(c.pairKey);
+          const isMatched = matched.has(c.pairKey);
           return (
             <button
               key={c.id}

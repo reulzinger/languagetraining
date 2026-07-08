@@ -937,6 +937,24 @@ export const CATEGORIES: Category[] = [
 
 export const ALL_WORDS_COUNT = CATEGORIES.reduce((n, c) => n + c.words.length, 0);
 
+/**
+ * Sammelkategorie mit Wörtern aus allen Themen. Jedes Wort behält seine
+ * ursprüngliche catId, damit Fortschritt/Sterne weiter der echten
+ * Herkunftskategorie zugutekommen statt separat unter "gemischt" zu laufen.
+ */
+export const MIXED_CATEGORY: Category = {
+  id: "gemischt",
+  name: "Gemischt",
+  emoji: "🌈",
+  from: "#f093fb",
+  to: "#4facfe",
+  isMixed: true,
+  practiceLimit: 30,
+  words: CATEGORIES.flatMap((c) => c.words.map((w) => ({ ...w, catId: c.id }))),
+};
+
+const ALL_CATEGORIES: Category[] = [...CATEGORIES, MIXED_CATEGORY];
+
 export function categoryById(id: string): Category | undefined {
-  return CATEGORIES.find((c) => c.id === id);
+  return ALL_CATEGORIES.find((c) => c.id === id);
 }

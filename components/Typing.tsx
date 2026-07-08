@@ -78,7 +78,7 @@ export default function Typing({
     if (attempt.toLowerCase() === task.answer.toLowerCase()) {
       setPhase("correct");
       setScore((s) => s + 1);
-      report(cat.id, task.word.de, task.lang, true, XP_PER_WORD);
+      report(task.word.catId ?? cat.id, task.word.de, task.lang, true, XP_PER_WORD);
       playCorrect();
       speak(task.word[task.lang], task.lang);
       nextTask(1100);
@@ -86,7 +86,7 @@ export default function Typing({
       playWrong();
       if (fails + 1 >= 2) {
         setPhase("reveal");
-        report(cat.id, task.word.de, task.lang, false, 0);
+        report(task.word.catId ?? cat.id, task.word.de, task.lang, false, 0);
         speak(task.word[task.lang], task.lang);
         nextTask(2000);
       } else {

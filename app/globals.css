@@ -517,6 +517,7 @@ input {
   gap: 12px;
 }
 .cat-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -527,6 +528,19 @@ input {
   text-align: left;
   box-shadow: var(--shadow);
   transition: transform 0.12s ease;
+}
+.cat-done-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .cat-tile:hover {
   transform: translateY(-3px) scale(1.02);
@@ -647,6 +661,42 @@ input {
   margin-top: 4px;
 }
 
+.lesson-cta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  background: linear-gradient(135deg, #0ba360, #3cba92);
+  color: #fff;
+  padding: 16px;
+  transition: transform 0.1s ease;
+}
+.lesson-cta:active {
+  transform: scale(0.98);
+}
+.lesson-cta-ribbon {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lesson-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lesson-cta-emoji {
+  font-size: 36px;
+}
+.lesson-cta .mode-btn-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .mode-list {
   display: flex;
   flex-direction: column;
@@ -763,6 +813,29 @@ input {
 }
 .option-btn.faded {
   opacity: 0.5;
+}
+
+/* ---------- Lektion ---------- */
+.lesson-step-tag {
+  display: inline-block;
+  background: #f3f0ff;
+  color: #6d28d9;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+.lesson-teach {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 28px 20px;
+}
+.lesson-teach .flip-translation {
+  margin-top: 4px;
 }
 
 /* ---------- Flashcards ---------- */

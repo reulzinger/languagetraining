@@ -102,4 +102,18 @@ export const BADGES: Badge[] = [
     desc: "15 Treffer in einer Blitzrunde",
     earned: (p) => p.blitzBest >= 15,
   },
+  {
+    id: "lesson1",
+    emoji: "📖",
+    name: "Erste Lektion",
+    desc: "Eine Lektion abgeschlossen",
+    earned: (p) => (p.lessonsDone?.length ?? 0) >= 1,
+  },
+  {
+    id: "lessonAll",
+    emoji: "🏅",
+    name: "Alles gelernt",
+    desc: "Alle Kategorien als Lektion abgeschlossen",
+    earned: (p) => (p.lessonsDone?.length ?? 0) >= CATEGORIES.length,
+  },
 ];

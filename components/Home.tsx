@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORIES, ALL_WORDS_COUNT } from "@/lib/data";
+import { CATEGORIES, MIXED_CATEGORY, ALL_WORDS_COUNT } from "@/lib/data";
 import { weakEntries } from "@/lib/game";
 import { BADGES } from "@/lib/badges";
 import { Profile, levelInfo, starsFor } from "@/lib/storage";
@@ -130,24 +130,31 @@ export default function Home({
 
       <h2 className="section-title">📚 Kategorien</h2>
       <div className="cat-grid">
-        {CATEGORIES.map((cat) => (
+        {[MIXED_CATEGORY, ...CATEGORIES].map((cat) => (
           <button
             key={cat.id}
             className="cat-tile"
             style={{ background: `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
             onClick={() => onOpenCategory(cat.id)}
           >
+            {!cat.isMixed && profile.lessonsDone.includes(cat.id) && (
+              <span className="cat-done-badge" title="Lektion abgeschlossen">✅</span>
+            )}
             <span className="cat-emoji">{cat.emoji}</span>
             <span className="cat-name">{cat.name}</span>
-            <span className="cat-count">{cat.words.length} Wörter</span>
-            <span className="cat-stars">
-              {langs.map((l) => (
-                <span key={l} className="cat-starrow">
-                  {profile.lang === "both" && <span className="cat-flag">{LANG_FLAG[l]}</span>}
-                  <Stars count={starsFor(profile, cat, l)} size={13} />
-                </span>
-              ))}
+            <span className="cat-count">
+              {cat.isMixed ? "Alle Wörter gemischt" : `${cat.words.length} Wörter`}
             </span>
+            {!cat.isMixed && (
+              <span className="cat-stars">
+                {langs.map((l) => (
+                  <span key={l} className="cat-starrow">
+                    {profile.lang === "both" && <span className="cat-flag">{LANG_FLAG[l]}</span>}
+                    <Stars count={starsFor(profile, cat, l)} size={13} />
+                  </span>
+                ))}
+              </span>
+            )}
           </button>
         ))}
       </div>

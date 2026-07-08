@@ -15,6 +15,7 @@ export interface Profile {
   correctEn: number;
   correctEs: number;
   blitzBest: number; // meiste Treffer in einer Blitzrunde
+  lessonsDone: string[]; // Kategorie-IDs mit abgeschlossener Lektion
 }
 
 const PROFILES_KEY = "sprachhelden_profiles_v1";
@@ -48,6 +49,7 @@ export function loadProfiles(): Profile[] {
           correctEn: 0,
           correctEs: 0,
           blitzBest: 0,
+          lessonsDone: [],
           ...p,
         }) as Profile
     );
@@ -85,7 +87,12 @@ export function newProfile(name: string, avatar: string): Profile {
     correctEn: 0,
     correctEs: 0,
     blitzBest: 0,
+    lessonsDone: [],
   };
+}
+
+export function markLessonDone(p: Profile, catId: string) {
+  if (!p.lessonsDone.includes(catId)) p.lessonsDone = [...p.lessonsDone, catId];
 }
 
 /** Streak fortschreiben: heute schon aktiv → nichts, gestern aktiv → +1, sonst Neustart. */

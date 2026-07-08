@@ -8,6 +8,7 @@ import {
   addXp,
   loadActiveId,
   loadProfiles,
+  markLessonDone,
   newProfile,
   recordWord,
   saveActiveId,
@@ -23,9 +24,10 @@ import Flashcards from "./Flashcards";
 import Blitz from "./Blitz";
 import Memory from "./Memory";
 import Typing from "./Typing";
+import Lesson from "./Lesson";
 import { BgDeco } from "./ui";
 
-export type GameMode = "flash" | "quiz" | "blitz" | "memory" | "typing" | "listen" | "review";
+export type GameMode = "flash" | "quiz" | "blitz" | "memory" | "typing" | "listen" | "review" | "lesson";
 
 type Screen =
   | { name: "profiles" }
@@ -88,6 +90,25 @@ export default function App() {
     (hits: number) => {
       updateActive((p) => {
         p.blitzBest = Math.max(p.blitzBest, hits);
+      });
+    },
+    [updateActive]
+  );
+
+  const awardXp = useCallback(
+    (xp: number) => {
+      updateActive((p) => {
+        touchStreak(p);
+        addXp(p, xp);
+      });
+    },
+    [updateActive]
+  );
+
+  const finishLesson = useCallback(
+    (catId: string) => {
+      updateActive((p) => {
+        markLessonDone(p, catId);
       });
     },
     [updateActive]
@@ -188,6 +209,18 @@ export default function App() {
         break;
       case "typing":
         content = cat && <Typing cat={cat} langMode={lang} report={report} onExit={exit} />;
+        break;
+      case "lesson":
+        content = cat && (
+          <Lesson
+            cat={cat}
+            langMode={lang}
+            report={report}
+            awardXp={awardXp}
+            onLessonDone={() => finishLesson(cat.id)}
+            onExit={exit}
+          />
+        );
         break;
       default:
         content = (

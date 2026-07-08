@@ -42,7 +42,7 @@ export function makeQuestion(
     if (distractors.length === 3) break;
   }
   return {
-    catId: cat.id,
+    catId: word.catId ?? cat.id,
     word,
     lang,
     dir,
@@ -108,6 +108,13 @@ export function typeableLang(word: Word, langMode: LangMode): Lang | null {
     if (!t.includes(" ") && t.length >= 2 && t.length <= 12) return lang;
   }
   return null;
+}
+
+/** Teilt eine Kategorie in kleine Lerngruppen für die geführte Lektion. */
+export function buildLessonBatches(cat: Category, batchSize = 5): Word[][] {
+  const out: Word[][] = [];
+  for (let i = 0; i < cat.words.length; i += batchSize) out.push(cat.words.slice(i, i + batchSize));
+  return out;
 }
 
 /** Endlose Fragen quer durch alle Kategorien (für die Blitzrunde). */

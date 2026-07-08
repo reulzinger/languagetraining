@@ -11,6 +11,11 @@ import { ReportFn } from "./Quiz";
 
 const XP_PER_KNOWN = 5;
 
+function pickDeck(cat: Category): Word[] {
+  const all = shuffle(cat.words);
+  return cat.practiceLimit ? all.slice(0, cat.practiceLimit) : all;
+}
+
 export default function Flashcards({
   cat,
   langMode,
@@ -23,7 +28,7 @@ export default function Flashcards({
   onExit: () => void;
 }) {
   const [round, setRound] = useState(0);
-  const initial = useMemo(() => shuffle(cat.words), [cat, round]);
+  const initial = useMemo(() => pickDeck(cat), [cat, round]);
   const [queue, setQueue] = useState<Word[]>(initial);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
@@ -36,7 +41,8 @@ export default function Flashcards({
 
   function answer(knewIt: boolean) {
     if (!card) return;
-    langs.forEach((l, i) => report(cat.id, card.de, l, knewIt, knewIt && i === 0 ? XP_PER_KNOWN : 0));
+    const wordCatId = card.catId ?? cat.id;
+    langs.forEach((l, i) => report(wordCatId, card.de, l, knewIt, knewIt && i === 0 ? XP_PER_KNOWN : 0));
     if (knewIt) {
       setXp((x) => x + XP_PER_KNOWN);
       setKnown((k) => k + 1);
@@ -53,7 +59,7 @@ export default function Flashcards({
 
   function restart() {
     setRound((r) => r + 1);
-    setQueue(shuffle(cat.words));
+    setQueue(pickDeck(cat));
     setFlipped(false);
     setKnown(0);
     setRetries(0);

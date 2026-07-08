@@ -29,6 +29,7 @@ export default function ModeSelect({
 }) {
   const langs: Lang[] = profile.lang === "both" ? ["en", "es"] : [profile.lang];
   const typeableCount = cat.words.filter((w) => typeableLang(w, profile.lang)).length;
+  const lessonDone = profile.lessonsDone.includes(cat.id);
 
   const modes = MODES.filter((m) => {
     if (m.mode === "typing" && typeableCount < 6) return false;
@@ -46,17 +47,37 @@ export default function ModeSelect({
         <span className="mode-hero-emoji">{cat.emoji}</span>
         <div className="mode-hero-info">
           <div className="mode-hero-name">{cat.name}</div>
-          <div className="mode-hero-count">{cat.words.length} Wörter</div>
-          <div className="mode-hero-stars">
-            {langs.map((l) => (
-              <span key={l} className="cat-starrow">
-                <span className="cat-flag">{LANG_FLAG[l]}</span>
-                <Stars count={starsFor(profile, cat, l)} size={15} />
-              </span>
-            ))}
-          </div>
+          {cat.isMixed ? (
+            <div className="mode-hero-count">🎲 Zufällige Auswahl aus allen Kategorien</div>
+          ) : (
+            <>
+              <div className="mode-hero-count">{cat.words.length} Wörter</div>
+              <div className="mode-hero-stars">
+                {langs.map((l) => (
+                  <span key={l} className="cat-starrow">
+                    <span className="cat-flag">{LANG_FLAG[l]}</span>
+                    <Stars count={starsFor(profile, cat, l)} size={15} />
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {!cat.isMixed && (
+        <button className="lesson-cta card pop" onClick={() => onPlay("lesson")}>
+          <span className="lesson-cta-ribbon">{lessonDone ? "✅ Schon gelernt" : "Empfohlen zum Start"}</span>
+          <span className="lesson-cta-row">
+            <span className="lesson-cta-emoji">📖</span>
+            <span className="mode-btn-text">
+              <span className="mode-btn-title">Lektion</span>
+              <span className="mode-btn-desc">Erst alle Wörter kennenlernen, dann in kleinen Gruppen abfragen</span>
+            </span>
+            <span className="mode-btn-go">▶</span>
+          </span>
+        </button>
+      )}
 
       <div className="mode-list">
         {modes.map((m) => (
