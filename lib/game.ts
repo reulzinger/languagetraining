@@ -25,9 +25,14 @@ export interface Question {
   options: string[];
 }
 
-export function makeQuestion(cat: Category, word: Word, langMode: LangMode): Question {
-  const lang = pickLang(langMode);
-  const dir: "de2x" | "x2de" = Math.random() < 0.5 ? "de2x" : "x2de";
+export function makeQuestion(
+  cat: Category,
+  word: Word,
+  langMode: LangMode,
+  fixed?: { lang?: Lang; dir?: "de2x" | "x2de" }
+): Question {
+  const lang = fixed?.lang ?? pickLang(langMode);
+  const dir: "de2x" | "x2de" = fixed?.dir ?? (Math.random() < 0.5 ? "de2x" : "x2de");
   const answer = dir === "de2x" ? word[lang] : word.de;
   const pool = cat.words.filter((w) => w.de !== word.de);
   const distractors: string[] = [];
@@ -50,6 +55,59 @@ export function makeQuestion(cat: Category, word: Word, langMode: LangMode): Que
 export function buildQuiz(cat: Category, langMode: LangMode, count: number): Question[] {
   const words = shuffle(cat.words).slice(0, count);
   return words.map((w) => makeQuestion(cat, w, langMode));
+}
+
+/** Hör-Quiz: fremdes Wort hören, deutsche Bedeutung wählen. */
+export function buildListening(cat: Category, langMode: LangMode, count: number): Question[] {
+  const words = shuffle(cat.words).slice(0, count);
+  return words.map((w) => makeQuestion(cat, w, langMode, { dir: "x2de" }));
+}
+
+export interface WeakEntry {
+  cat: Category;
+  word: Word;
+  lang: Lang;
+}
+
+/** Wackelkandidaten: schon geübte Wörter mit Stärke 0–1. */
+export function weakEntries(strength: Record<string, number>, langMode: LangMode): WeakEntry[] {
+  const langs: Lang[] = langMode === "both" ? ["en", "es"] : [langMode];
+  const out: WeakEntry[] = [];
+  for (const cat of CATEGORIES) {
+    for (const word of cat.words) {
+      for (const lang of langs) {
+        const s = strength[`${cat.id}|${word.de}|${lang}`];
+        if (s !== undefined && s <= 1) out.push({ cat, word, lang });
+      }
+    }
+  }
+  return out;
+}
+
+export function buildReview(
+  strength: Record<string, number>,
+  langMode: LangMode,
+  count: number
+): Question[] {
+  return shuffle(weakEntries(strength, langMode))
+    .slice(0, count)
+    .map((e) => makeQuestion(e.cat, e.word, langMode, { lang: e.lang }));
+}
+
+/** Artikel entfernen, damit man nur das eigentliche Wort tippen muss. */
+export function stripArticle(text: string, lang: Lang): string {
+  if (lang === "es") return text.replace(/^(el|la|los|las)\s+/i, "");
+  return text.replace(/^(to|the)\s+/i, "");
+}
+
+/** Sprache wählen, in der sich das Wort gut tippen lässt (kurz, ohne Leerzeichen). */
+export function typeableLang(word: Word, langMode: LangMode): Lang | null {
+  const candidates: Lang[] = langMode === "both" ? shuffle(["en", "es"]) : [langMode];
+  for (const lang of candidates) {
+    const t = stripArticle(word[lang], lang);
+    if (!t.includes(" ") && t.length >= 2 && t.length <= 12) return lang;
+  }
+  return null;
 }
 
 /** Endlose Fragen quer durch alle Kategorien (für die Blitzrunde). */

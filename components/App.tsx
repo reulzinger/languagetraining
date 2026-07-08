@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { categoryById } from "@/lib/data";
+import { buildListening, buildQuiz, buildReview } from "@/lib/game";
 import {
   Profile,
   addXp,
@@ -20,15 +21,19 @@ import ModeSelect from "./ModeSelect";
 import Quiz from "./Quiz";
 import Flashcards from "./Flashcards";
 import Blitz from "./Blitz";
+import Memory from "./Memory";
+import Typing from "./Typing";
 import { BgDeco } from "./ui";
 
-export type GameMode = "flash" | "quiz" | "blitz";
+export type GameMode = "flash" | "quiz" | "blitz" | "memory" | "typing" | "listen" | "review";
 
 type Screen =
   | { name: "profiles" }
   | { name: "home" }
   | { name: "mode"; catId: string }
   | { name: "play"; catId: string | null; mode: GameMode };
+
+const QUIZ_QUESTIONS = 10;
 
 export default function App() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -74,6 +79,15 @@ export default function App() {
         touchStreak(p);
         recordWord(p, catId, de, lang, correct);
         if (xp > 0) addXp(p, xp);
+      });
+    },
+    [updateActive]
+  );
+
+  const noteBlitz = useCallback(
+    (hits: number) => {
+      updateActive((p) => {
+        p.blitzBest = Math.max(p.blitzBest, hits);
       });
     },
     [updateActive]
@@ -130,14 +144,55 @@ export default function App() {
     ) : null;
   } else if (screen.name === "play") {
     const cat = screen.catId ? categoryById(screen.catId) ?? null : null;
+    const lang = active.lang;
+    const strength = active.strength;
     const exit = () =>
       cat ? setScreen({ name: "mode", catId: cat.id }) : setScreen({ name: "home" });
-    if (screen.mode === "quiz" && cat) {
-      content = <Quiz cat={cat} langMode={active.lang} report={report} onExit={exit} />;
-    } else if (screen.mode === "flash" && cat) {
-      content = <Flashcards cat={cat} langMode={active.lang} report={report} onExit={exit} />;
-    } else {
-      content = <Blitz cat={cat} langMode={active.lang} report={report} onExit={exit} />;
+    switch (screen.mode) {
+      case "quiz":
+        content = cat && (
+          <Quiz
+            title={`${cat.emoji} Quiz`}
+            makeQuestions={() => buildQuiz(cat, lang, QUIZ_QUESTIONS)}
+            report={report}
+            onExit={exit}
+          />
+        );
+        break;
+      case "listen":
+        content = cat && (
+          <Quiz
+            title={`${cat.emoji} Hör-Quiz`}
+            makeQuestions={() => buildListening(cat, lang, QUIZ_QUESTIONS)}
+            listening
+            report={report}
+            onExit={exit}
+          />
+        );
+        break;
+      case "review":
+        content = (
+          <Quiz
+            title="🔁 Wackelkandidaten"
+            makeQuestions={() => buildReview(strength, lang, QUIZ_QUESTIONS)}
+            report={report}
+            onExit={exit}
+          />
+        );
+        break;
+      case "flash":
+        content = cat && <Flashcards cat={cat} langMode={lang} report={report} onExit={exit} />;
+        break;
+      case "memory":
+        content = cat && <Memory cat={cat} langMode={lang} report={report} onExit={exit} />;
+        break;
+      case "typing":
+        content = cat && <Typing cat={cat} langMode={lang} report={report} onExit={exit} />;
+        break;
+      default:
+        content = (
+          <Blitz cat={cat} langMode={lang} report={report} onFinish={noteBlitz} onExit={exit} />
+        );
     }
   } else {
     content = (
@@ -146,6 +201,7 @@ export default function App() {
         profiles={profiles}
         onOpenCategory={(id) => setScreen({ name: "mode", catId: id })}
         onBlitz={() => setScreen({ name: "play", catId: null, mode: "blitz" })}
+        onReview={() => setScreen({ name: "play", catId: null, mode: "review" })}
         onProfiles={() => setScreen({ name: "profiles" })}
         onLangChange={setLang}
       />

@@ -22,11 +22,13 @@ export default function Blitz({
   cat,
   langMode,
   report,
+  onFinish,
   onExit,
 }: {
   cat: Category | null;
   langMode: LangMode;
   report: ReportFn;
+  onFinish?: (hits: number) => void;
   onExit: () => void;
 }) {
   const [time, setTime] = useState(SECONDS);
@@ -51,6 +53,7 @@ export default function Blitz({
     if (time <= 0) {
       setDone(true);
       playWin();
+      onFinish?.(hits);
       return;
     }
     const id = setTimeout(() => setTime((t) => t - 1), 1000);

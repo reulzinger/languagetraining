@@ -893,6 +893,209 @@ input {
   font-size: 26px;
 }
 
+/* ---------- Wackelkandidaten & Badges ---------- */
+.review-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  transition: transform 0.1s ease;
+}
+.review-cta:active {
+  transform: scale(0.98);
+}
+.review-emoji {
+  font-size: 38px;
+}
+.review-title {
+  font-size: 19px;
+  font-weight: 900;
+}
+.review-sub {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.92;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3px;
+  padding: 12px 6px;
+  border-radius: 16px;
+  background: #fef9e7;
+}
+.badge.locked {
+  background: #f4f4f5;
+  filter: grayscale(1);
+  opacity: 0.65;
+}
+.badge-emoji {
+  font-size: 30px;
+}
+.badge-name {
+  font-size: 12px;
+  font-weight: 900;
+}
+.badge-desc {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* ---------- Memory ---------- */
+.memory-status {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.mem-card {
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  transition: transform 0.15s ease, opacity 0.3s ease;
+}
+.mem-card:not(.open):active {
+  transform: scale(0.94);
+}
+.mem-card.open {
+  background: #fff;
+  animation: pop 0.25s ease;
+}
+.mem-card.matched {
+  opacity: 0.55;
+  transform: scale(0.95);
+}
+.mem-back {
+  font-size: 30px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+}
+.mem-label {
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+  color: var(--ink);
+  word-break: break-word;
+}
+@media (min-width: 480px) {
+  .mem-label {
+    font-size: 15px;
+  }
+}
+
+/* ---------- Wort tippen ---------- */
+.typing-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+.slot {
+  width: 34px;
+  height: 42px;
+  border-radius: 10px;
+  border: 3px dashed #ddd6fe;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+  text-transform: lowercase;
+}
+.slot.filled {
+  border-style: solid;
+  border-color: #a78bfa;
+  background: #f5f3ff;
+  animation: pop 0.15s ease;
+}
+.typing-slots.ok .slot {
+  border-color: var(--green);
+  background: #dcfce7;
+}
+.typing-slots.reveal .slot {
+  border-color: var(--accent);
+  background: #fef3c7;
+}
+.typing-hint {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+.typing-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.tile {
+  min-width: 48px;
+  height: 54px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--ink);
+  box-shadow: 0 4px 0 rgba(46, 16, 101, 0.25);
+  transition: transform 0.08s ease, opacity 0.15s ease;
+  text-transform: lowercase;
+}
+.tile:active {
+  transform: translateY(3px);
+}
+.tile.used {
+  opacity: 0.25;
+}
+.tile-back {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ---------- Hör-Quiz ---------- */
+.listen-big {
+  font-size: 46px;
+  width: 96px;
+  height: 96px;
+  margin: 14px auto 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  box-shadow: 0 6px 0 #4c1d95;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.listen-big:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #4c1d95;
+}
+.listen-reveal {
+  font-size: 22px;
+  min-height: 32px;
+  color: var(--ink-soft);
+}
+.listen-reveal:not(:empty) {
+  color: var(--ink);
+}
+
 /* ---------- End screen ---------- */
 .end-card {
   text-align: center;

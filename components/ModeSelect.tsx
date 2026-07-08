@@ -2,12 +2,17 @@
 
 import { Category, Lang, LANG_FLAG } from "@/lib/types";
 import { Profile, starsFor } from "@/lib/storage";
+import { typeableLang } from "@/lib/game";
+import { speechAvailable } from "@/lib/speech";
 import { Stars, TopNav } from "./ui";
 import { GameMode } from "./App";
 
 const MODES: { mode: GameMode; emoji: string; title: string; desc: string }[] = [
   { mode: "flash", emoji: "🃏", title: "Karteikarten", desc: "Karten umdrehen, anhören und einprägen" },
   { mode: "quiz", emoji: "❓", title: "Quiz", desc: "10 Fragen mit 4 Antworten – was stimmt?" },
+  { mode: "memory", emoji: "🧠", title: "Memory", desc: "Finde die passenden Wortpaare" },
+  { mode: "typing", emoji: "⌨️", title: "Wort tippen", desc: "Baue das Wort aus dem Buchstabensalat" },
+  { mode: "listen", emoji: "🎧", title: "Hör-Quiz", desc: "Gut zuhören und die Bedeutung wählen" },
   { mode: "blitz", emoji: "⚡", title: "Blitzrunde", desc: "60 Sekunden Vollgas nur mit dieser Kategorie" },
 ];
 
@@ -23,6 +28,13 @@ export default function ModeSelect({
   onBack: () => void;
 }) {
   const langs: Lang[] = profile.lang === "both" ? ["en", "es"] : [profile.lang];
+  const typeableCount = cat.words.filter((w) => typeableLang(w, profile.lang)).length;
+
+  const modes = MODES.filter((m) => {
+    if (m.mode === "typing" && typeableCount < 6) return false;
+    if (m.mode === "listen" && !speechAvailable()) return false;
+    return true;
+  });
 
   return (
     <div className="screen">
@@ -47,7 +59,7 @@ export default function ModeSelect({
       </div>
 
       <div className="mode-list">
-        {MODES.map((m) => (
+        {modes.map((m) => (
           <button key={m.mode} className="mode-btn card pop" onClick={() => onPlay(m.mode)}>
             <span className="mode-btn-emoji">{m.emoji}</span>
             <span className="mode-btn-text">

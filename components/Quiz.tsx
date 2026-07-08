@@ -1,30 +1,36 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Category, Lang, LangMode, LANG_FLAG, LANG_LABEL } from "@/lib/types";
-import { buildQuiz } from "@/lib/game";
+import { Lang, LANG_FLAG, LANG_LABEL } from "@/lib/types";
+import { Question } from "@/lib/game";
 import { speak } from "@/lib/speech";
 import { playCorrect, playWrong, playWin } from "@/lib/sound";
 import { Confetti, ProgressBar, TopNav } from "./ui";
 
 export type ReportFn = (catId: string, de: string, lang: Lang, correct: boolean, xp: number) => void;
 
-const QUESTIONS = 10;
 const XP_PER_CORRECT = 10;
 
+/**
+ * Generische Quiz-Engine: normales Quiz, Hör-Quiz (listening) und
+ * Wackelkandidaten-Wiederholung nutzen dieselbe Mechanik.
+ */
 export default function Quiz({
-  cat,
-  langMode,
+  title,
+  makeQuestions,
+  listening = false,
   report,
   onExit,
 }: {
-  cat: Category;
-  langMode: LangMode;
+  title: string;
+  makeQuestions: () => Question[];
+  listening?: boolean;
   report: ReportFn;
   onExit: () => void;
 }) {
   const [round, setRound] = useState(0);
-  const questions = useMemo(() => buildQuiz(cat, langMode, QUESTIONS), [cat, langMode, round]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const questions = useMemo(() => makeQuestions(), [round]);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
@@ -37,19 +43,23 @@ export default function Quiz({
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
+  // Im Hör-Quiz jede Frage automatisch vorsprechen
+  useEffect(() => {
+    if (listening && q) speak(q.prompt, q.lang);
+  }, [listening, idx, q]);
+
   function pick(option: string) {
-    if (picked !== null) return;
+    if (picked !== null || !q) return;
     const correct = option === q.answer;
     setPicked(option);
-    report(cat.id, q.word.de, q.lang, correct, correct ? XP_PER_CORRECT : 0);
+    report(q.catId, q.word.de, q.lang, correct, correct ? XP_PER_CORRECT : 0);
     if (correct) {
       setScore((s) => s + 1);
       playCorrect();
     } else {
       playWrong();
     }
-    // Das fremdsprachige Wort immer einmal vorsprechen
-    speak(q.word[q.lang], q.lang);
+    if (!listening) speak(q.word[q.lang], q.lang);
     timer.current = setTimeout(() => {
       if (idx + 1 >= questions.length) {
         setDone(true);
@@ -69,12 +79,30 @@ export default function Quiz({
     setDone(false);
   }
 
+  if (questions.length === 0) {
+    return (
+      <div className="screen">
+        <TopNav title={title} onBack={onExit} />
+        <div className="card end-card pop">
+          <div className="end-emoji">🎉</div>
+          <div className="end-title">Nichts zu üben!</div>
+          <div className="end-score">Gerade sitzen alle Wörter – spiel eine Runde, um Neues zu lernen.</div>
+          <div className="end-actions">
+            <button className="btn btn-primary btn-big" onClick={onExit}>
+              Zurück
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (done) {
     const great = score >= questions.length * 0.7;
     return (
       <div className="screen">
         {great && <Confetti />}
-        <TopNav title="Quiz" emoji="❓" onBack={onExit} />
+        <TopNav title={title} onBack={onExit} />
         <div className="card end-card pop">
           <div className="end-emoji">{great ? "🏆" : score >= questions.length / 2 ? "💪" : "🌱"}</div>
           <div className="end-title">
@@ -97,14 +125,15 @@ export default function Quiz({
     );
   }
 
-  const questionLabel =
-    q.dir === "de2x"
+  const questionLabel = listening
+    ? `Hör gut zu! ${LANG_FLAG[q.lang]} Was bedeutet das?`
+    : q.dir === "de2x"
       ? `Wie heißt das auf ${LANG_LABEL[q.lang]}? ${LANG_FLAG[q.lang]}`
       : `Was bedeutet das auf Deutsch? 🇩🇪`;
 
   return (
     <div className="screen">
-      <TopNav title={`${cat.emoji} Quiz`} onBack={onExit} />
+      <TopNav title={title} onBack={onExit} />
       <div className="quiz-progress">
         <ProgressBar value={idx / questions.length} className="quizbar" />
         <span className="quiz-count">
@@ -114,15 +143,26 @@ export default function Quiz({
 
       <div className="card quiz-card pop" key={idx}>
         <div className="quiz-label">{questionLabel}</div>
-        <div className="quiz-prompt-emoji">{q.dir === "de2x" || picked ? q.word.emoji : "❔"}</div>
-        <div className="quiz-prompt">
-          {q.prompt}
-          {q.dir === "x2de" && (
-            <button className="speak-btn" onClick={() => speak(q.prompt, q.lang)} aria-label="Anhören">
+        {listening ? (
+          <>
+            <button className="listen-big" onClick={() => speak(q.prompt, q.lang)} aria-label="Nochmal anhören">
               🔊
             </button>
-          )}
-        </div>
+            <div className="quiz-prompt listen-reveal">{picked ? `${q.word.emoji} ${q.prompt}` : "Tippe zum Wiederholen"}</div>
+          </>
+        ) : (
+          <>
+            <div className="quiz-prompt-emoji">{q.dir === "de2x" || picked ? q.word.emoji : "❔"}</div>
+            <div className="quiz-prompt">
+              {q.prompt}
+              {q.dir === "x2de" && (
+                <button className="speak-btn" onClick={() => speak(q.prompt, q.lang)} aria-label="Anhören">
+                  🔊
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="options">

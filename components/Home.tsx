@@ -1,6 +1,8 @@
 "use client";
 
 import { CATEGORIES, ALL_WORDS_COUNT } from "@/lib/data";
+import { weakEntries } from "@/lib/game";
+import { BADGES } from "@/lib/badges";
 import { Profile, levelInfo, starsFor } from "@/lib/storage";
 import { Lang, LangMode, LANG_FLAG } from "@/lib/types";
 import { speak } from "@/lib/speech";
@@ -23,6 +25,7 @@ export default function Home({
   profiles,
   onOpenCategory,
   onBlitz,
+  onReview,
   onProfiles,
   onLangChange,
 }: {
@@ -30,6 +33,7 @@ export default function Home({
   profiles: Profile[];
   onOpenCategory: (id: string) => void;
   onBlitz: () => void;
+  onReview: () => void;
   onProfiles: () => void;
   onLangChange: (mode: LangMode) => void;
 }) {
@@ -38,6 +42,8 @@ export default function Home({
   const langs: Lang[] = profile.lang === "both" ? ["en", "es"] : [profile.lang];
   const board = [...profiles].sort((a, b) => b.weekXp - a.weekXp);
   const medals = ["🥇", "🥈", "🥉"];
+  const weakCount = weakEntries(profile.strength, profile.lang).length;
+  const earnedBadges = BADGES.filter((b) => b.earned(profile));
 
   return (
     <div className="screen home-screen">
@@ -78,6 +84,19 @@ export default function Home({
         </span>
         <span className="blitz-go">▶</span>
       </button>
+
+      {weakCount > 0 && (
+        <button className="review-cta card" onClick={onReview}>
+          <span className="review-emoji">🔁</span>
+          <span className="blitz-text">
+            <span className="review-title">Wackelkandidaten üben</span>
+            <span className="review-sub">
+              {weakCount} {weakCount === 1 ? "Wort sitzt" : "Wörter sitzen"} noch nicht sicher
+            </span>
+          </span>
+          <span className="blitz-go">▶</span>
+        </button>
+      )}
 
       <div className="card wod-card">
         <div className="card-label">✨ Wort des Tages</div>
@@ -131,6 +150,24 @@ export default function Home({
             </span>
           </button>
         ))}
+      </div>
+
+      <div className="card badge-card">
+        <div className="card-label">
+          🎖️ Abzeichen ({earnedBadges.length}/{BADGES.length})
+        </div>
+        <div className="badge-grid">
+          {BADGES.map((b) => {
+            const got = b.earned(profile);
+            return (
+              <div key={b.id} className={`badge ${got ? "earned" : "locked"}`} title={b.desc}>
+                <span className="badge-emoji">{got ? b.emoji : "🔒"}</span>
+                <span className="badge-name">{b.name}</span>
+                <span className="badge-desc">{b.desc}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <footer className="home-footer">

@@ -11,6 +11,10 @@ export interface Profile {
   strength: Record<string, number>; // "catId|de|lang" -> 0..3
   weekXp: number;
   weekKey: string;
+  totalCorrect: number;
+  correctEn: number;
+  correctEs: number;
+  blitzBest: number; // meiste Treffer in einer Blitzrunde
 }
 
 const PROFILES_KEY = "sprachhelden_profiles_v1";
@@ -35,7 +39,18 @@ export function loadProfiles(): Profile[] {
   try {
     const raw = localStorage.getItem(PROFILES_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as Profile[];
+    const parsed = JSON.parse(raw) as Partial<Profile>[];
+    // Ältere Profile um neue Felder ergänzen
+    return parsed.map(
+      (p) =>
+        ({
+          totalCorrect: 0,
+          correctEn: 0,
+          correctEs: 0,
+          blitzBest: 0,
+          ...p,
+        }) as Profile
+    );
   } catch {
     return [];
   }
@@ -66,6 +81,10 @@ export function newProfile(name: string, avatar: string): Profile {
     strength: {},
     weekXp: 0,
     weekKey: currentWeekKey(),
+    totalCorrect: 0,
+    correctEn: 0,
+    correctEs: 0,
+    blitzBest: 0,
   };
 }
 
@@ -93,6 +112,11 @@ export function recordWord(p: Profile, catId: string, de: string, lang: Lang, co
   const key = `${catId}|${de}|${lang}`;
   const s = p.strength[key] ?? 0;
   p.strength[key] = correct ? Math.min(3, s + 1) : Math.max(0, s - 1);
+  if (correct) {
+    p.totalCorrect += 1;
+    if (lang === "en") p.correctEn += 1;
+    else p.correctEs += 1;
+  }
 }
 
 /** 0–3 Sterne, je nachdem wie gut die Wörter der Kategorie sitzen. */
