@@ -16,6 +16,7 @@ type Phase = "teach" | "check";
 export default function Lesson({
   cat,
   langMode,
+  roundNumber,
   report,
   awardXp,
   onLessonDone,
@@ -23,11 +24,15 @@ export default function Lesson({
 }: {
   cat: Category;
   langMode: LangMode;
+  roundNumber: number;
   report: ReportFn;
   awardXp: (xp: number) => void;
   onLessonDone: () => void;
   onExit: () => void;
 }) {
+  // Bleibt für die ganze Durchspiel-Runde stabil, auch wenn roundNumber (Prop)
+  // nach Abschluss schon hochgezählt wurde.
+  const [myRound, setMyRound] = useState(roundNumber);
   const [round, setRound] = useState(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const batches = useMemo(() => buildLessonBatches(cat, 5), [cat, round]);
@@ -100,6 +105,7 @@ export default function Lesson({
   }
 
   function restart() {
+    setMyRound(roundNumber);
     setRound((r) => r + 1);
     setBatchIdx(0);
     setPhase("teach");
@@ -124,10 +130,10 @@ export default function Lesson({
     return (
       <div className="screen">
         <Confetti />
-        <TopNav title={`${cat.emoji} Lektion`} onBack={onExit} />
+        <TopNav title={`${cat.emoji} Lektion ${myRound}`} onBack={onExit} />
         <div className="card end-card pop">
           <div className="end-emoji">{great ? "🎓" : "🌱"}</div>
-          <div className="end-title">Lektion abgeschlossen!</div>
+          <div className="end-title">Lektion {myRound} abgeschlossen!</div>
           <div className="end-score">
             {totalWords} Wörter kennengelernt · {correctCount}/{totalChecks} beim ersten Mal richtig
           </div>
@@ -147,7 +153,7 @@ export default function Lesson({
 
   return (
     <div className="screen">
-      <TopNav title={`${cat.emoji} Lektion`} onBack={onExit} />
+      <TopNav title={`${cat.emoji} Lektion ${myRound}`} onBack={onExit} />
       <div className="quiz-progress">
         <ProgressBar value={overallProgress} className="quizbar" />
         <span className="quiz-count">Gruppe {batchIdx + 1}/{batches.length}</span>

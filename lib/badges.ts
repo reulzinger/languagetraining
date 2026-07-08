@@ -107,13 +107,20 @@ export const BADGES: Badge[] = [
     emoji: "📖",
     name: "Erste Lektion",
     desc: "Eine Lektion abgeschlossen",
-    earned: (p) => (p.lessonsDone?.length ?? 0) >= 1,
+    earned: (p) => Object.values(p.lessonRounds ?? {}).some((n) => n >= 1),
   },
   {
     id: "lessonAll",
     emoji: "🏅",
     name: "Alles gelernt",
-    desc: "Alle Kategorien als Lektion abgeschlossen",
-    earned: (p) => (p.lessonsDone?.length ?? 0) >= CATEGORIES.length,
+    desc: "In jeder Kategorie mindestens eine Lektion abgeschlossen",
+    earned: (p) => CATEGORIES.every((c) => (p.lessonRounds?.[c.id] ?? 0) >= 1),
+  },
+  {
+    id: "lessonRepeat",
+    emoji: "🔂",
+    name: "Übung macht den Meister",
+    desc: "Eine Lektion 3× abgeschlossen",
+    earned: (p) => Object.values(p.lessonRounds ?? {}).some((n) => n >= 3),
   },
 ];

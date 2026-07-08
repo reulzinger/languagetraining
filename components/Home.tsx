@@ -3,7 +3,7 @@
 import { CATEGORIES, MIXED_CATEGORY, ALL_WORDS_COUNT } from "@/lib/data";
 import { weakEntries } from "@/lib/game";
 import { BADGES } from "@/lib/badges";
-import { Profile, levelInfo, starsFor } from "@/lib/storage";
+import { Profile, lessonRoundsFor, levelInfo, starsFor } from "@/lib/storage";
 import { Lang, LangMode, LANG_FLAG } from "@/lib/types";
 import { speak } from "@/lib/speech";
 import { ProgressBar, Stars } from "./ui";
@@ -137,8 +137,10 @@ export default function Home({
             style={{ background: `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
             onClick={() => onOpenCategory(cat.id)}
           >
-            {!cat.isMixed && profile.lessonsDone.includes(cat.id) && (
-              <span className="cat-done-badge" title="Lektion abgeschlossen">✅</span>
+            {!cat.isMixed && lessonRoundsFor(profile, cat.id) > 0 && (
+              <span className="cat-done-badge" title={`Lektion ${lessonRoundsFor(profile, cat.id)}× abgeschlossen`}>
+                {lessonRoundsFor(profile, cat.id) > 1 ? `✅${lessonRoundsFor(profile, cat.id)}` : "✅"}
+              </span>
             )}
             <span className="cat-emoji">{cat.emoji}</span>
             <span className="cat-name">{cat.name}</span>

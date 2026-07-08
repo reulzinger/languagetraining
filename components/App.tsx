@@ -8,7 +8,7 @@ import {
   addXp,
   loadActiveId,
   loadProfiles,
-  markLessonDone,
+  markLessonRound,
   newProfile,
   recordWord,
   saveActiveId,
@@ -108,7 +108,7 @@ export default function App() {
   const finishLesson = useCallback(
     (catId: string) => {
       updateActive((p) => {
-        markLessonDone(p, catId);
+        markLessonRound(p, catId);
       });
     },
     [updateActive]
@@ -215,6 +215,7 @@ export default function App() {
           <Lesson
             cat={cat}
             langMode={lang}
+            roundNumber={(active.lessonRounds[cat.id] ?? 0) + 1}
             report={report}
             awardXp={awardXp}
             onLessonDone={() => finishLesson(cat.id)}

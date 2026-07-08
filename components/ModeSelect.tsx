@@ -1,7 +1,7 @@
 "use client";
 
 import { Category, Lang, LANG_FLAG } from "@/lib/types";
-import { Profile, starsFor } from "@/lib/storage";
+import { Profile, lessonRoundsFor, starsFor } from "@/lib/storage";
 import { typeableLang } from "@/lib/game";
 import { speechAvailable } from "@/lib/speech";
 import { Stars, TopNav } from "./ui";
@@ -29,7 +29,7 @@ export default function ModeSelect({
 }) {
   const langs: Lang[] = profile.lang === "both" ? ["en", "es"] : [profile.lang];
   const typeableCount = cat.words.filter((w) => typeableLang(w, profile.lang)).length;
-  const lessonDone = profile.lessonsDone.includes(cat.id);
+  const rounds = lessonRoundsFor(profile, cat.id);
 
   const modes = MODES.filter((m) => {
     if (m.mode === "typing" && typeableCount < 6) return false;
@@ -67,11 +67,13 @@ export default function ModeSelect({
 
       {!cat.isMixed && (
         <button className="lesson-cta card pop" onClick={() => onPlay("lesson")}>
-          <span className="lesson-cta-ribbon">{lessonDone ? "✅ Schon gelernt" : "Empfohlen zum Start"}</span>
+          <span className="lesson-cta-ribbon">
+            {rounds === 0 ? "Empfohlen zum Start" : `✅ ${rounds}× abgeschlossen`}
+          </span>
           <span className="lesson-cta-row">
             <span className="lesson-cta-emoji">📖</span>
             <span className="mode-btn-text">
-              <span className="mode-btn-title">Lektion</span>
+              <span className="mode-btn-title">Lektion {rounds + 1}</span>
               <span className="mode-btn-desc">Erst alle Wörter kennenlernen, dann in kleinen Gruppen abfragen</span>
             </span>
             <span className="mode-btn-go">▶</span>
