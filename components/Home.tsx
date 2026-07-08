@@ -1,7 +1,7 @@
 "use client";
 
 import { CATEGORIES, MIXED_CATEGORY, ALL_WORDS_COUNT } from "@/lib/data";
-import { weakEntries } from "@/lib/game";
+import { buildLessons, weakEntries } from "@/lib/game";
 import { BADGES } from "@/lib/badges";
 import { Profile, lessonRoundsFor, levelInfo, starsFor } from "@/lib/storage";
 import { Lang, LangMode, LANG_FLAG } from "@/lib/types";
@@ -130,16 +130,26 @@ export default function Home({
 
       <h2 className="section-title">📚 Kategorien</h2>
       <div className="cat-grid">
-        {[MIXED_CATEGORY, ...CATEGORIES].map((cat) => (
+        {[MIXED_CATEGORY, ...CATEGORIES].map((cat) => {
+          const lessonCount = cat.isMixed ? 0 : buildLessons(cat).length;
+          const lessonsStarted = cat.isMixed
+            ? 0
+            : Array.from({ length: lessonCount }, (_, i) => i).filter(
+                (i) => lessonRoundsFor(profile, cat.id, i) > 0
+              ).length;
+          return (
           <button
             key={cat.id}
             className="cat-tile"
             style={{ background: `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
             onClick={() => onOpenCategory(cat.id)}
           >
-            {!cat.isMixed && lessonRoundsFor(profile, cat.id) > 0 && (
-              <span className="cat-done-badge" title={`Lektion ${lessonRoundsFor(profile, cat.id)}× abgeschlossen`}>
-                {lessonRoundsFor(profile, cat.id) > 1 ? `✅${lessonRoundsFor(profile, cat.id)}` : "✅"}
+            {!cat.isMixed && lessonsStarted > 0 && (
+              <span
+                className="cat-done-badge"
+                title={`${lessonsStarted} von ${lessonCount} Lektionen begonnen`}
+              >
+                ✅{lessonsStarted}/{lessonCount}
               </span>
             )}
             <span className="cat-emoji">{cat.emoji}</span>
@@ -158,7 +168,8 @@ export default function Home({
               </span>
             )}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div className="card badge-card">

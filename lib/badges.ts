@@ -1,5 +1,6 @@
 import { CATEGORIES } from "./data";
-import { Profile, levelInfo, starsFor } from "./storage";
+import { buildLessons } from "./game";
+import { Profile, levelInfo, lessonProgressKey, starsFor } from "./storage";
 
 export interface Badge {
   id: string;
@@ -15,6 +16,16 @@ function threeStarCategories(p: Profile): number {
     if (starsFor(p, cat, "en") === 3 || starsFor(p, cat, "es") === 3) n++;
   }
   return n;
+}
+
+function allLessonsStarted(p: Profile): boolean {
+  for (const cat of CATEGORIES) {
+    const lessonCount = buildLessons(cat).length;
+    for (let i = 0; i < lessonCount; i++) {
+      if ((p.lessonProgress?.[lessonProgressKey(cat.id, i)] ?? 0) < 1) return false;
+    }
+  }
+  return true;
 }
 
 export const BADGES: Badge[] = [
@@ -107,20 +118,20 @@ export const BADGES: Badge[] = [
     emoji: "📖",
     name: "Erste Lektion",
     desc: "Eine Lektion abgeschlossen",
-    earned: (p) => Object.values(p.lessonRounds ?? {}).some((n) => n >= 1),
+    earned: (p) => Object.values(p.lessonProgress ?? {}).some((n) => n >= 1),
   },
   {
     id: "lessonAll",
     emoji: "🏅",
     name: "Alles gelernt",
-    desc: "In jeder Kategorie mindestens eine Lektion abgeschlossen",
-    earned: (p) => CATEGORIES.every((c) => (p.lessonRounds?.[c.id] ?? 0) >= 1),
+    desc: "Jede Lektion in jeder Kategorie mindestens einmal gemacht",
+    earned: (p) => allLessonsStarted(p),
   },
   {
     id: "lessonRepeat",
     emoji: "🔂",
     name: "Übung macht den Meister",
-    desc: "Eine Lektion 3× abgeschlossen",
-    earned: (p) => Object.values(p.lessonRounds ?? {}).some((n) => n >= 3),
+    desc: "Eine Lektion 3× wiederholt",
+    earned: (p) => Object.values(p.lessonProgress ?? {}).some((n) => n >= 3),
   },
 ];

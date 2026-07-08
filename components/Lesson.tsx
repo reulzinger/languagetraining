@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Category, Lang, LangMode, LANG_FLAG } from "@/lib/types";
+import { Category, Lang, LangMode, Word, LANG_FLAG } from "@/lib/types";
 import { Question, buildLessonBatches, makeQuestion, shuffle } from "@/lib/game";
 import { speak } from "@/lib/speech";
 import { playCorrect, playWrong, playWin } from "@/lib/sound";
@@ -9,33 +9,32 @@ import { Confetti, ProgressBar, TopNav } from "./ui";
 import { ReportFn } from "./Quiz";
 
 const XP_PER_CHECK = 8;
-const XP_COMPLETE_BONUS = 30;
+const XP_COMPLETE_BONUS = 20;
 
 type Phase = "teach" | "check";
 
 export default function Lesson({
   cat,
+  words,
+  lessonNumber,
   langMode,
-  roundNumber,
   report,
   awardXp,
   onLessonDone,
   onExit,
 }: {
   cat: Category;
+  words: Word[];
+  lessonNumber: number;
   langMode: LangMode;
-  roundNumber: number;
   report: ReportFn;
   awardXp: (xp: number) => void;
   onLessonDone: () => void;
   onExit: () => void;
 }) {
-  // Bleibt für die ganze Durchspiel-Runde stabil, auch wenn roundNumber (Prop)
-  // nach Abschluss schon hochgezählt wurde.
-  const [myRound, setMyRound] = useState(roundNumber);
   const [round, setRound] = useState(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const batches = useMemo(() => buildLessonBatches(cat, 5), [cat, round]);
+  const batches = useMemo(() => buildLessonBatches(words, 5), [words, round]);
   const langs: Lang[] = langMode === "both" ? ["en", "es"] : [langMode];
 
   const [batchIdx, setBatchIdx] = useState(0);
@@ -105,7 +104,6 @@ export default function Lesson({
   }
 
   function restart() {
-    setMyRound(roundNumber);
     setRound((r) => r + 1);
     setBatchIdx(0);
     setPhase("teach");
@@ -119,7 +117,7 @@ export default function Lesson({
     setJustDoneCalled(false);
   }
 
-  const totalWords = cat.words.length;
+  const totalWords = words.length;
   const wordsDoneBefore = batchIdx * 5;
   const overallProgress =
     (wordsDoneBefore + (phase === "teach" ? teachIdx : batch?.length ?? 0)) / totalWords;
@@ -130,17 +128,17 @@ export default function Lesson({
     return (
       <div className="screen">
         <Confetti />
-        <TopNav title={`${cat.emoji} Lektion ${myRound}`} onBack={onExit} />
+        <TopNav title={`${cat.emoji} Lektion ${lessonNumber}`} onBack={onExit} />
         <div className="card end-card pop">
           <div className="end-emoji">{great ? "🎓" : "🌱"}</div>
-          <div className="end-title">Lektion {myRound} abgeschlossen!</div>
+          <div className="end-title">Lektion {lessonNumber} geschafft!</div>
           <div className="end-score">
-            {totalWords} Wörter kennengelernt · {correctCount}/{totalChecks} beim ersten Mal richtig
+            {totalWords} Wörter · {correctCount}/{totalChecks} beim ersten Mal richtig
           </div>
           <div className="end-xp">+{xpEarned} XP</div>
           <div className="end-actions">
             <button className="btn btn-primary btn-big" onClick={restart}>
-              🔄 Nochmal
+              🔄 Nochmal üben
             </button>
             <button className="btn btn-ghost btn-big" onClick={onExit}>
               Fertig
@@ -153,7 +151,7 @@ export default function Lesson({
 
   return (
     <div className="screen">
-      <TopNav title={`${cat.emoji} Lektion ${myRound}`} onBack={onExit} />
+      <TopNav title={`${cat.emoji} Lektion ${lessonNumber}`} onBack={onExit} />
       <div className="quiz-progress">
         <ProgressBar value={overallProgress} className="quizbar" />
         <span className="quiz-count">Gruppe {batchIdx + 1}/{batches.length}</span>

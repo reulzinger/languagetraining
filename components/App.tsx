@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { categoryById } from "@/lib/data";
-import { buildListening, buildQuiz, buildReview } from "@/lib/game";
+import { buildListening, buildLessons, buildQuiz, buildReview } from "@/lib/game";
 import {
   Profile,
   addXp,
@@ -25,6 +25,7 @@ import Blitz from "./Blitz";
 import Memory from "./Memory";
 import Typing from "./Typing";
 import Lesson from "./Lesson";
+import LessonList from "./LessonList";
 import { BgDeco } from "./ui";
 
 export type GameMode = "flash" | "quiz" | "blitz" | "memory" | "typing" | "listen" | "review" | "lesson";
@@ -33,7 +34,8 @@ type Screen =
   | { name: "profiles" }
   | { name: "home" }
   | { name: "mode"; catId: string }
-  | { name: "play"; catId: string | null; mode: GameMode };
+  | { name: "lessons"; catId: string }
+  | { name: "play"; catId: string | null; mode: GameMode; lessonIndex?: number };
 
 const QUIZ_QUESTIONS = 10;
 
@@ -106,9 +108,9 @@ export default function App() {
   );
 
   const finishLesson = useCallback(
-    (catId: string) => {
+    (catId: string, lessonIndex: number) => {
       updateActive((p) => {
-        markLessonRound(p, catId);
+        markLessonRound(p, catId, lessonIndex);
       });
     },
     [updateActive]
@@ -160,7 +162,18 @@ export default function App() {
         cat={cat}
         profile={active}
         onPlay={(mode) => setScreen({ name: "play", catId: cat.id, mode })}
+        onOpenLessons={() => setScreen({ name: "lessons", catId: cat.id })}
         onBack={() => setScreen({ name: "home" })}
+      />
+    ) : null;
+  } else if (screen.name === "lessons") {
+    const cat = categoryById(screen.catId);
+    content = cat ? (
+      <LessonList
+        cat={cat}
+        profile={active}
+        onPlay={(lessonIndex) => setScreen({ name: "play", catId: cat.id, mode: "lesson", lessonIndex })}
+        onBack={() => setScreen({ name: "mode", catId: cat.id })}
       />
     ) : null;
   } else if (screen.name === "play") {
@@ -210,19 +223,25 @@ export default function App() {
       case "typing":
         content = cat && <Typing cat={cat} langMode={lang} report={report} onExit={exit} />;
         break;
-      case "lesson":
-        content = cat && (
+      case "lesson": {
+        const lessonIndex = screen.lessonIndex ?? 0;
+        const lessonWords = cat ? buildLessons(cat)[lessonIndex] : undefined;
+        const lessonExit = () =>
+          cat ? setScreen({ name: "lessons", catId: cat.id }) : setScreen({ name: "home" });
+        content = cat && lessonWords && (
           <Lesson
             cat={cat}
+            words={lessonWords}
+            lessonNumber={lessonIndex + 1}
             langMode={lang}
-            roundNumber={(active.lessonRounds[cat.id] ?? 0) + 1}
             report={report}
             awardXp={awardXp}
-            onLessonDone={() => finishLesson(cat.id)}
-            onExit={exit}
+            onLessonDone={() => finishLesson(cat.id, lessonIndex)}
+            onExit={lessonExit}
           />
         );
         break;
+      }
       default:
         content = (
           <Blitz cat={cat} langMode={lang} report={report} onFinish={noteBlitz} onExit={exit} />

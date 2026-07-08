@@ -1,8 +1,8 @@
 "use client";
 
 import { Category, Lang, LANG_FLAG } from "@/lib/types";
-import { Profile, lessonRoundsFor, starsFor } from "@/lib/storage";
-import { typeableLang } from "@/lib/game";
+import { Profile, starsFor } from "@/lib/storage";
+import { buildLessons, typeableLang } from "@/lib/game";
 import { speechAvailable } from "@/lib/speech";
 import { Stars, TopNav } from "./ui";
 import { GameMode } from "./App";
@@ -20,16 +20,18 @@ export default function ModeSelect({
   cat,
   profile,
   onPlay,
+  onOpenLessons,
   onBack,
 }: {
   cat: Category;
   profile: Profile;
   onPlay: (mode: GameMode) => void;
+  onOpenLessons: () => void;
   onBack: () => void;
 }) {
   const langs: Lang[] = profile.lang === "both" ? ["en", "es"] : [profile.lang];
   const typeableCount = cat.words.filter((w) => typeableLang(w, profile.lang)).length;
-  const rounds = lessonRoundsFor(profile, cat.id);
+  const lessonCount = cat.isMixed ? 0 : buildLessons(cat).length;
 
   const modes = MODES.filter((m) => {
     if (m.mode === "typing" && typeableCount < 6) return false;
@@ -66,15 +68,13 @@ export default function ModeSelect({
       </div>
 
       {!cat.isMixed && (
-        <button className="lesson-cta card pop" onClick={() => onPlay("lesson")}>
-          <span className="lesson-cta-ribbon">
-            {rounds === 0 ? "Empfohlen zum Start" : `✅ ${rounds}× abgeschlossen`}
-          </span>
+        <button className="lesson-cta card pop" onClick={onOpenLessons}>
+          <span className="lesson-cta-ribbon">Empfohlen zum Start</span>
           <span className="lesson-cta-row">
             <span className="lesson-cta-emoji">📖</span>
             <span className="mode-btn-text">
-              <span className="mode-btn-title">Lektion {rounds + 1}</span>
-              <span className="mode-btn-desc">Erst alle Wörter kennenlernen, dann in kleinen Gruppen abfragen</span>
+              <span className="mode-btn-title">Lektionen ({lessonCount})</span>
+              <span className="mode-btn-desc">Wortweise neue Vokabeln lernen und gleich abfragen</span>
             </span>
             <span className="mode-btn-go">▶</span>
           </span>

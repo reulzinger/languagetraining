@@ -15,7 +15,7 @@ export interface Profile {
   correctEn: number;
   correctEs: number;
   blitzBest: number; // meiste Treffer in einer Blitzrunde
-  lessonRounds: Record<string, number>; // catId -> Anzahl komplett abgeschlossener Lektions-Durchläufe
+  lessonProgress: Record<string, number>; // "catId:lektionIndex" -> Anzahl abgeschlossener Durchläufe dieser Lektion
 }
 
 const PROFILES_KEY = "sprachhelden_profiles_v1";
@@ -49,7 +49,7 @@ export function loadProfiles(): Profile[] {
           correctEn: 0,
           correctEs: 0,
           blitzBest: 0,
-          lessonRounds: {},
+          lessonProgress: {},
           ...p,
         }) as Profile
     );
@@ -87,17 +87,22 @@ export function newProfile(name: string, avatar: string): Profile {
     correctEn: 0,
     correctEs: 0,
     blitzBest: 0,
-    lessonRounds: {},
+    lessonProgress: {},
   };
 }
 
-/** Zählt einen weiteren kompletten Lektions-Durchlauf für diese Kategorie. */
-export function markLessonRound(p: Profile, catId: string) {
-  p.lessonRounds = { ...p.lessonRounds, [catId]: (p.lessonRounds[catId] ?? 0) + 1 };
+export function lessonProgressKey(catId: string, lessonIndex: number): string {
+  return `${catId}:${lessonIndex}`;
 }
 
-export function lessonRoundsFor(p: Profile, catId: string): number {
-  return p.lessonRounds?.[catId] ?? 0;
+/** Zählt einen weiteren Durchlauf dieser einen Lektion. */
+export function markLessonRound(p: Profile, catId: string, lessonIndex: number) {
+  const key = lessonProgressKey(catId, lessonIndex);
+  p.lessonProgress = { ...p.lessonProgress, [key]: (p.lessonProgress[key] ?? 0) + 1 };
+}
+
+export function lessonRoundsFor(p: Profile, catId: string, lessonIndex: number): number {
+  return p.lessonProgress?.[lessonProgressKey(catId, lessonIndex)] ?? 0;
 }
 
 /** Streak fortschreiben: heute schon aktiv → nichts, gestern aktiv → +1, sonst Neustart. */

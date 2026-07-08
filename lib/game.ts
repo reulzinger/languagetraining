@@ -110,10 +110,19 @@ export function typeableLang(word: Word, langMode: LangMode): Lang | null {
   return null;
 }
 
-/** Teilt eine Kategorie in kleine Lerngruppen für die geführte Lektion. */
-export function buildLessonBatches(cat: Category, batchSize = 5): Word[][] {
+export const LESSON_SIZE = 10;
+
+/** Teilt eine Kategorie in mehrere Lektionen mit je neuen Wörtern. */
+export function buildLessons(cat: Category, lessonSize = LESSON_SIZE): Word[][] {
   const out: Word[][] = [];
-  for (let i = 0; i < cat.words.length; i += batchSize) out.push(cat.words.slice(i, i + batchSize));
+  for (let i = 0; i < cat.words.length; i += lessonSize) out.push(cat.words.slice(i, i + lessonSize));
+  return out;
+}
+
+/** Teilt die Wörter einer einzelnen Lektion in kleine Lerngruppen (Teach+Check). */
+export function buildLessonBatches(words: Word[], batchSize = 5): Word[][] {
+  const out: Word[][] = [];
+  for (let i = 0; i < words.length; i += batchSize) out.push(words.slice(i, i + batchSize));
   return out;
 }
 
