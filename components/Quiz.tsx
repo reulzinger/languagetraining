@@ -48,6 +48,16 @@ export default function Quiz({
     if (listening && q) speak(q.prompt, q.lang);
   }, [listening, idx, q]);
 
+  function advance() {
+    if (idx + 1 >= questions.length) {
+      setDone(true);
+      playWin();
+    } else {
+      setIdx(idx + 1);
+      setPicked(null);
+    }
+  }
+
   function pick(option: string) {
     if (picked !== null || !q) return;
     const correct = option === q.answer;
@@ -60,15 +70,9 @@ export default function Quiz({
       playWrong();
     }
     if (!listening) speak(q.word[q.lang], q.lang);
-    timer.current = setTimeout(() => {
-      if (idx + 1 >= questions.length) {
-        setDone(true);
-        playWin();
-      } else {
-        setIdx(idx + 1);
-        setPicked(null);
-      }
-    }, 1400);
+    // Im Hör-Quiz erst weiter, wenn per Button bestätigt – Zeit zum Lesen & Merken
+    if (listening) return;
+    timer.current = setTimeout(advance, 1400);
   }
 
   function restart() {
@@ -180,6 +184,12 @@ export default function Quiz({
           );
         })}
       </div>
+
+      {listening && picked !== null && (
+        <button className="btn btn-primary btn-big pop" onClick={advance}>
+          {idx + 1 >= questions.length ? "Fertig ✅" : "Weiter ➡️"}
+        </button>
+      )}
     </div>
   );
 }
